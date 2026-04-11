@@ -104,8 +104,7 @@ async function handleSend() {
       currentField = data.currentField || null;
       addMessage(data.reply, "bot");
 
-      if (data.completed) {
-        addMessage("Booking summary recorded successfully.", "bot");
+           if (data.completed) {
         chatInput.disabled = true;
         sendBtn.disabled = true;
         sendBtn.textContent = "Completed";
