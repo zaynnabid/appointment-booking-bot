@@ -9,11 +9,13 @@ let bookingData = {
   appointmentType: "",
   preferredDate: "",
   preferredTime: "",
-  note: ""
+  note: "",
+  _skippedFields: []
 };
 
 let currentField = null;
 let isConversationStarted = false;
+let isBookingSubmitted = false;
 
 function addMessage(text, sender = "bot") {
   const message = document.createElement("div");
@@ -24,6 +26,7 @@ function addMessage(text, sender = "bot") {
   message.style.borderRadius = "10px";
   message.style.maxWidth = "80%";
   message.style.whiteSpace = "pre-wrap";
+  message.style.wordBreak = "break-word";
 
   if (sender === "bot") {
     message.style.background = "#e2e8f0";
@@ -53,8 +56,19 @@ async function sendMessageToApi(payload) {
     body: JSON.stringify(payload)
   });
 
-  const data = await response.json();
-  return data;
+  return await response.json();
+}
+
+async function submitBooking(payload) {
+  const response = await fetch("/api/submit-booking", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return await response.json();
 }
 
 async function startConversation() {
@@ -78,15 +92,21 @@ async function startConversation() {
   } catch (error) {
     addMessage("Server se response nahi mila. Dobara try karein.", "bot");
   } finally {
-    setLoading(false);
-    chatInput.focus();
+    if (!isBookingSubmitted) {
+      setLoading(false);
+      chatInput.focus();
+    }
   }
 }
 
 async function handleSend() {
   const text = chatInput.value.trim();
 
-  if (!text) return;
+  if (!text || isBookingSubmitted) return;
+
+  if (!isConversationStarted) {
+    isConversationStarted = true;
+  }
 
   addMessage(text, "user");
   chatInput.value = "";
@@ -104,11 +124,33 @@ async function handleSend() {
       currentField = data.currentField || null;
       addMessage(data.reply, "bot");
 
-           if (data.completed) {
-        chatInput.disabled = true;
-        sendBtn.disabled = true;
-        sendBtn.textContent = "Completed";
-        return;
+      if (data.completed) {
+        const submitResult = await submitBooking({
+          fullName: bookingData.fullName,
+          phone: bookingData.phone,
+          email: bookingData.email,
+          appointmentType: bookingData.appointmentType,
+          preferredDate: bookingData.preferredDate,
+          preferredTime: bookingData.preferredTime,
+          note: bookingData.note
+        });
+
+        if (submitResult.success) {
+          isBookingSubmitted = true;
+          addMessage(
+            `Your booking has been saved successfully.\nBooking ID: ${submitResult.bookingId}`,
+            "bot"
+          );
+          chatInput.disabled = true;
+          sendBtn.disabled = true;
+          sendBtn.textContent = "Completed";
+          return;
+        }
+
+        addMessage(
+          submitResult.message || "Booking save nahi ho saki.",
+          "bot"
+        );
       }
     } else {
       addMessage(data.message || "Something went wrong.", "bot");
@@ -116,7 +158,7 @@ async function handleSend() {
   } catch (error) {
     addMessage("Server se response nahi mila. Dobara try karein.", "bot");
   } finally {
-    if (sendBtn.textContent !== "Completed") {
+    if (!isBookingSubmitted) {
       setLoading(false);
       chatInput.focus();
     }
