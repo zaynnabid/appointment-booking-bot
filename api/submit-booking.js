@@ -1,4 +1,5 @@
 import { saveBooking } from "../lib/storage.js";
+import { sendToGHL } from "../lib/ghl.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -30,11 +31,14 @@ export default async function handler(req, res) {
 
     const result = await saveBooking(bookingData);
 
+    const ghlResult = await sendToGHL(result.booking);
+
     return res.status(200).json({
       success: true,
       message: "Booking submitted successfully.",
       bookingId: result.bookingId,
-      booking: result.booking
+      booking: result.booking,
+      ghl: ghlResult
     });
   } catch (error) {
     return res.status(500).json({
