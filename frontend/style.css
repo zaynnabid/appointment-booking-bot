@@ -87,3 +87,6 @@ body {
 .chat-input-area input:disabled {
   background: #f1f5f9;
 }
+.message {
+  word-break: break-word;
+}
