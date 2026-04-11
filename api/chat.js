@@ -6,7 +6,8 @@ import {
   getBookingReply,
   updateBookingData,
   isBookingComplete,
-  buildBookingSummary
+  buildBookingSummary,
+  markFieldSkipped
 } from "../lib/bookingFlow.js";
 import {
   validateField,
@@ -71,13 +72,9 @@ export default async function handler(req, res) {
       }
     }
 
-    const valueToStore = shouldSkip ? "" : trimmedMessage;
-
-    const updatedBooking = updateBookingData(
-      safeBookingData,
-      currentField,
-      valueToStore
-    );
+    const updatedBooking = shouldSkip
+      ? markFieldSkipped(safeBookingData, currentField)
+      : updateBookingData(safeBookingData, currentField, trimmedMessage);
 
     const bookingReply = getBookingReply(updatedBooking);
     const completed =
