@@ -1,3 +1,13 @@
+import {
+  INITIAL_BOOKING_STATE,
+  QUESTIONS
+} from "../lib/bookingConfig.js";
+import {
+  getBookingReply,
+  updateBookingData,
+  isBookingComplete
+} from "../lib/bookingFlow.js";
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
@@ -7,18 +17,39 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message } = req.body;
+    const { message, bookingData, currentField } = req.body;
 
-    if (!message || !String(message).trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Message is required."
+    const safeBookingData = {
+      ...INITIAL_BOOKING_STATE,
+      ...(bookingData || {})
+    };
+
+    const trimmedMessage = String(message || "").trim();
+
+    if (!trimmedMessage && !currentField) {
+      return res.status(200).json({
+        success: true,
+        reply: QUESTIONS.fullName,
+        bookingData: safeBookingData,
+        currentField: "fullName",
+        completed: false
       });
     }
 
+    const updatedBooking = updateBookingData(
+      safeBookingData,
+      currentField,
+      trimmedMessage
+    );
+
+    const bookingReply = getBookingReply(updatedBooking);
+
     return res.status(200).json({
       success: true,
-      reply: `Aap ne kaha: "${message}". Booking flow next phase mein add hoga.`
+      reply: bookingReply.reply,
+      bookingData: updatedBooking,
+      currentField: bookingReply.nextField,
+      completed: isBookingComplete(updatedBooking) && !bookingReply.nextField
     });
   } catch (error) {
     return res.status(500).json({
