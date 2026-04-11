@@ -10,6 +10,7 @@ function addMessage(text, sender = "bot") {
   message.style.padding = "12px";
   message.style.borderRadius = "10px";
   message.style.maxWidth = "80%";
+  message.style.whiteSpace = "pre-wrap";
 
   if (sender === "bot") {
     message.style.background = "#e2e8f0";
@@ -24,17 +25,50 @@ function addMessage(text, sender = "bot") {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function handleSend() {
+function setLoading(isLoading) {
+  sendBtn.disabled = isLoading;
+  chatInput.disabled = isLoading;
+  sendBtn.textContent = isLoading ? "Sending..." : "Send";
+}
+
+async function sendMessageToApi(userMessage) {
+  const response = await fetch("/api/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: userMessage
+    })
+  });
+
+  const data = await response.json();
+  return data;
+}
+
+async function handleSend() {
   const text = chatInput.value.trim();
 
   if (!text) return;
 
   addMessage(text, "user");
   chatInput.value = "";
+  setLoading(true);
 
-  setTimeout(() => {
-    addMessage("Bot response will come here.", "bot");
-  }, 400);
+  try {
+    const data = await sendMessageToApi(text);
+
+    if (data.success) {
+      addMessage(data.reply, "bot");
+    } else {
+      addMessage(data.message || "Something went wrong.", "bot");
+    }
+  } catch (error) {
+    addMessage("Server se response nahi mila. Dobara try karein.", "bot");
+  } finally {
+    setLoading(false);
+    chatInput.focus();
+  }
 }
 
 sendBtn.addEventListener("click", handleSend);
