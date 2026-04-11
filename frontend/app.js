@@ -88,10 +88,6 @@ async function handleSend() {
 
   if (!text) return;
 
-  if (!isConversationStarted) {
-    isConversationStarted = true;
-  }
-
   addMessage(text, "user");
   chatInput.value = "";
   setLoading(true);
@@ -113,6 +109,7 @@ async function handleSend() {
         chatInput.disabled = true;
         sendBtn.disabled = true;
         sendBtn.textContent = "Completed";
+        return;
       }
     } else {
       addMessage(data.message || "Something went wrong.", "bot");
@@ -120,7 +117,7 @@ async function handleSend() {
   } catch (error) {
     addMessage("Server se response nahi mila. Dobara try karein.", "bot");
   } finally {
-    if (!sendBtn.disabled) {
+    if (sendBtn.textContent !== "Completed") {
       setLoading(false);
       chatInput.focus();
     }
