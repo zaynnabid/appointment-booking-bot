@@ -1,3 +1,5 @@
+import { saveBooking } from "../lib/storage.js";
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
@@ -6,8 +8,38 @@ export default async function handler(req, res) {
     });
   }
 
-  return res.status(200).json({
-    success: true,
-    message: "Submit booking endpoint is ready."
-  });
+  try {
+    const bookingData = req.body || {};
+
+    const requiredFields = [
+      "fullName",
+      "phone",
+      "appointmentType",
+      "preferredDate",
+      "preferredTime"
+    ];
+
+    for (const field of requiredFields) {
+      if (!bookingData[field] || !String(bookingData[field]).trim()) {
+        return res.status(400).json({
+          success: false,
+          message: `${field} is required.`
+        });
+      }
+    }
+
+    const result = await saveBooking(bookingData);
+
+    return res.status(200).json({
+      success: true,
+      message: "Booking submitted successfully.",
+      bookingId: result.bookingId,
+      booking: result.booking
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to submit booking."
+    });
+  }
 }
