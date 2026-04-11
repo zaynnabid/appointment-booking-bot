@@ -2,6 +2,19 @@ const chatMessages = document.getElementById("chatMessages");
 const chatInput = document.getElementById("chatInput");
 const sendBtn = document.getElementById("sendBtn");
 
+let bookingData = {
+  fullName: "",
+  phone: "",
+  email: "",
+  appointmentType: "",
+  preferredDate: "",
+  preferredTime: "",
+  note: ""
+};
+
+let currentField = null;
+let isConversationStarted = false;
+
 function addMessage(text, sender = "bot") {
   const message = document.createElement("div");
   message.className = `message ${sender}`;
@@ -31,19 +44,43 @@ function setLoading(isLoading) {
   sendBtn.textContent = isLoading ? "Sending..." : "Send";
 }
 
-async function sendMessageToApi(userMessage) {
+async function sendMessageToApi(payload) {
   const response = await fetch("/api/chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      message: userMessage
-    })
+    body: JSON.stringify(payload)
   });
 
   const data = await response.json();
   return data;
+}
+
+async function startConversation() {
+  try {
+    setLoading(true);
+
+    const data = await sendMessageToApi({
+      message: "",
+      bookingData,
+      currentField
+    });
+
+    if (data.success) {
+      bookingData = data.bookingData || bookingData;
+      currentField = data.currentField || null;
+      addMessage(data.reply, "bot");
+      isConversationStarted = true;
+    } else {
+      addMessage(data.message || "Conversation start nahi ho saki.", "bot");
+    }
+  } catch (error) {
+    addMessage("Server se response nahi mila. Dobara try karein.", "bot");
+  } finally {
+    setLoading(false);
+    chatInput.focus();
+  }
 }
 
 async function handleSend() {
@@ -51,23 +88,42 @@ async function handleSend() {
 
   if (!text) return;
 
+  if (!isConversationStarted) {
+    isConversationStarted = true;
+  }
+
   addMessage(text, "user");
   chatInput.value = "";
   setLoading(true);
 
   try {
-    const data = await sendMessageToApi(text);
+    const data = await sendMessageToApi({
+      message: text,
+      bookingData,
+      currentField
+    });
 
     if (data.success) {
+      bookingData = data.bookingData || bookingData;
+      currentField = data.currentField || null;
       addMessage(data.reply, "bot");
+
+      if (data.completed) {
+        addMessage("Booking summary recorded successfully.", "bot");
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+        sendBtn.textContent = "Completed";
+      }
     } else {
       addMessage(data.message || "Something went wrong.", "bot");
     }
   } catch (error) {
     addMessage("Server se response nahi mila. Dobara try karein.", "bot");
   } finally {
-    setLoading(false);
-    chatInput.focus();
+    if (!sendBtn.disabled) {
+      setLoading(false);
+      chatInput.focus();
+    }
   }
 }
 
@@ -80,3 +136,4 @@ chatInput.addEventListener("keypress", (event) => {
 });
 
 addMessage("Assalam o Alaikum! Main aapki appointment booking mein help karunga.", "bot");
+startConversation();
