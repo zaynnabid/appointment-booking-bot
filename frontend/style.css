@@ -93,13 +93,21 @@ body {
 #restartBtn {
   padding: 12px 18px;
   font-size: 16px;
-  border: none;
-  background: #e2e8f0;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
   color: #0f172a;
   border-radius: 10px;
   cursor: pointer;
+  min-width: 100px;
 }
 
 #restartBtn:hover {
-  opacity: 0.95;
+  background: #f8fafc;
+}
+
+#restartBtn:disabled {
+  opacity: 1;
+  cursor: pointer;
+  background: #ffffff;
+  color: #0f172a;
 }
