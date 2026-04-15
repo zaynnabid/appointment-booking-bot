@@ -14,6 +14,7 @@ let bookingData = {
   _skippedFields: []
 };
 
+
 let currentField = null;
 let isConversationStarted = false;
 let isBookingSubmitted = false;
@@ -176,3 +177,29 @@ chatInput.addEventListener("keypress", (event) => {
 
 addMessage("Assalam o Alaikum! Main aapki appointment booking mein help karunga.", "bot");
 startConversation();
+function resetConversation() {
+  bookingData = {
+    fullName: "",
+    phone: "",
+    email: "",
+    appointmentType: "",
+    preferredDate: "",
+    preferredTime: "",
+    note: "",
+    _skippedFields: []
+  };
+
+  currentField = null;
+  isConversationStarted = false;
+  isBookingSubmitted = false;
+
+  chatMessages.innerHTML = "";
+
+  chatInput.disabled = false;
+  sendBtn.disabled = false;
+  sendBtn.textContent = "Send";
+
+  addMessage("Nayi booking start karte hain.", "bot");
+  startConversation();
+}
+restartBtn.addEventListener("click", resetConversation);
