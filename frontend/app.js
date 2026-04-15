@@ -2,6 +2,7 @@ const restartBtn = document.getElementById("restartBtn");
 const chatMessages = document.getElementById("chatMessages");
 const chatInput = document.getElementById("chatInput");
 const sendBtn = document.getElementById("sendBtn");
+const restartBtn = document.getElementById("restartBtn");
 
 let bookingData = {
   fullName: "",
