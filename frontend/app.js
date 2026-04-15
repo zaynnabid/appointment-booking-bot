@@ -1,4 +1,3 @@
-const restartBtn = document.getElementById("restartBtn");
 const chatMessages = document.getElementById("chatMessages");
 const chatInput = document.getElementById("chatInput");
 const sendBtn = document.getElementById("sendBtn");
@@ -14,7 +13,6 @@ let bookingData = {
   note: "",
   _skippedFields: []
 };
-
 
 let currentField = null;
 let isConversationStarted = false;
@@ -119,7 +117,7 @@ function resetConversation() {
   isBookingSubmitted = false;
 
   chatMessages.innerHTML = "";
-
+  chatInput.value = "";
   chatInput.disabled = false;
   sendBtn.disabled = false;
   sendBtn.textContent = "Send";
@@ -127,7 +125,6 @@ function resetConversation() {
   addMessage("Nayi booking start karte hain.", "bot");
   startConversation();
 }
-
 
 async function handleSend() {
   const text = chatInput.value.trim();
@@ -206,29 +203,3 @@ chatInput.addEventListener("keypress", (event) => {
 
 addMessage("Assalam o Alaikum! Main aapki appointment booking mein help karunga.", "bot");
 startConversation();
-function resetConversation() {
-  bookingData = {
-    fullName: "",
-    phone: "",
-    email: "",
-    appointmentType: "",
-    preferredDate: "",
-    preferredTime: "",
-    note: "",
-    _skippedFields: []
-  };
-
-  currentField = null;
-  isConversationStarted = false;
-  isBookingSubmitted = false;
-
-  chatMessages.innerHTML = "";
-
-  chatInput.disabled = false;
-  sendBtn.disabled = false;
-  sendBtn.textContent = "Send";
-
-  addMessage("Nayi booking start karte hain.", "bot");
-  startConversation();
-}
-
