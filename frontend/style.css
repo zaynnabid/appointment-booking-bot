@@ -90,3 +90,9 @@ body {
 .message {
   word-break: break-word;
 }
+#restartBtn {
+  padding: 10px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  cursor: pointer;
+}
