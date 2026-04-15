@@ -102,6 +102,33 @@ async function startConversation() {
   }
 }
 
+function resetConversation() {
+  bookingData = {
+    fullName: "",
+    phone: "",
+    email: "",
+    appointmentType: "",
+    preferredDate: "",
+    preferredTime: "",
+    note: "",
+    _skippedFields: []
+  };
+
+  currentField = null;
+  isConversationStarted = false;
+  isBookingSubmitted = false;
+
+  chatMessages.innerHTML = "";
+
+  chatInput.disabled = false;
+  sendBtn.disabled = false;
+  sendBtn.textContent = "Send";
+
+  addMessage("Nayi booking start karte hain.", "bot");
+  startConversation();
+}
+
+
 async function handleSend() {
   const text = chatInput.value.trim();
 
@@ -169,6 +196,7 @@ async function handleSend() {
 }
 
 sendBtn.addEventListener("click", handleSend);
+restartBtn.addEventListener("click", resetConversation);
 
 chatInput.addEventListener("keypress", (event) => {
   if (event.key === "Enter") {
@@ -203,4 +231,4 @@ function resetConversation() {
   addMessage("Nayi booking start karte hain.", "bot");
   startConversation();
 }
-restartBtn.addEventListener("click", resetConversation);
+
